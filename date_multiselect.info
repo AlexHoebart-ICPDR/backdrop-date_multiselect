@@ -1,0 +1,6 @@
+name = Date Multiselect
+description = Enables jquery multiselect calendars http://multidatespickr.sourceforge.net/
+dependencies[] = date_popup
+package = Date/Time
+core = 7.x
+configure = admin/config/date/date_multiselect

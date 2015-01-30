@@ -1,0 +1,338 @@
+<?php
+/**
+ * @file
+ * A module to enable jquery calendar multiselect picker.
+ * Requires the Date Popup module.
+ *
+ * Add a type of #date_multiselect to any date or datetime field that will
+ * use this widget. Set #date_format to the way the date should be presented
+ * to the user in the form. Set #default_value to be a date in the local
+ * timezone, and note the timezone name in #date_timezone.
+ *
+ * No time elements are included in the format string, only the date
+ * will be saved.
+ *
+ */
+
+function date_multiselect_field_widget_info() {
+  $settings = array(
+    'settings' => array(
+      'input_format' => date_default_format('date_select'),
+      'input_format_custom' => '',
+      'increment' => 15,
+      'text_parts' => array(),
+      'year_range' => '-3:+3',
+      'numberOfMonths' => '2',
+    ),
+    'behaviors' => array(
+      'multiple values' => FIELD_BEHAVIOR_CUSTOM,
+    ),
+  );
+
+  $info['date_multiselect'] = array(
+    'label' =>  t('Multiselect calendar'),
+    'field types' => array('date', 'datestamp', 'datetime'),
+  ) + $settings;
+
+  return $info;
+}
+
+/**
+ * Implements hook_field_widget_settings_form().
+ */
+function date_multiselect_field_widget_settings_form($field, $instance) {
+  $settings = $instance['widget']['settings'];
+  $form['numberOfMonths'] = array(
+    '#title' => t('Number of months to display'),
+    '#type' => 'textfield',
+    '#default_value' => '2',
+  );
+  $form['year_range'] = array(
+    '#type' => 'date_year_range',
+    '#default_value' => $settings['year_range'],
+    '#fieldset' => 'date_format',
+    '#weight' => 6,
+  );
+
+  return $form;
+}
+
+/**
+ * Load needed files.
+ *
+ * Play nice with jQuery UI.
+ */
+function date_multiselect_add() {
+  static $loaded = FALSE;
+  if ($loaded) {
+    return;
+  }
+
+  date_popup_add();
+  drupal_add_library('date_multiselect', 'multidatespicker');
+  $loaded = TRUE;
+}
+
+/**
+ * Implements hook_library().
+ */
+function date_multiselect_library() {
+  $libraries = array();
+
+  $path = drupal_get_path('module', 'date_multiselect');
+  $libraries['multidatespicker'] = array(
+    'title' => 'MultiDatesPicker',
+    'website' => 'http://multidatespickr.sourceforge.net/',
+    'version' => '1.6.3',
+    'js' => array(
+      $path . '/js/jquery-ui.multidatespicker.js' => array(),
+    ),
+  );
+  return $libraries;
+}
+
+/**
+ * Create a unique CSS id name and output a single inline JS block for
+ * each startup function to call and settings array to pass it.  This
+ * used to create a unique CSS class for each unique combination of
+ * function and settings, but using classes requires a DOM traversal
+ * and is much slower than an id lookup.  The new approach returns to
+ * requiring a duplicate copy of the settings/code for every element
+ * that uses them, but is much faster.  We could combine the logic by
+ * putting the ids for each unique function/settings combo into
+ * Drupal.settings and searching for each listed id.
+ *
+ * @param $pfx
+ *   The CSS class prefix to search the DOM for.
+ *   TODO : unused ?
+ * @param $settings
+ *   The settings array to pass to the jQuery function.
+ * @returns
+ *   The CSS id to assign to the element that should have
+ * $func($settings) invoked on it.
+ */
+function date_multiselect_js_settings_id($id, $settings) {
+  static $js_added = FALSE;
+  static $id_count = array();
+
+  // Make sure multiselect date selector grid is in correct year.
+  if (!empty($settings['yearRange'])) {
+    $parts = explode(':', $settings['yearRange']);
+    // Set the default date to 0 or the lowest bound if the date ranges do not include the current year
+    // Necessary for the datepicker to render and select dates correctly
+    $defaultDate = ($parts[0] > 0 || 0 > $parts[1]) ? $parts[0] : 0;
+    $settings += array('defaultDate' => (string) $defaultDate . 'y');
+  }
+
+  if (!$js_added) {
+    date_multiselect_add();
+    drupal_add_js(drupal_get_path('module', 'date_multiselect') .'/js/date_multiselect.js');
+    $js_added = TRUE;
+  }
+
+  // We use a static array to account for possible multiple form_builder()
+  // calls in the same request (form instance on 'Preview').
+  if (!isset($id_count[$id])) {
+    $id_count[$id] = 0;
+  }
+
+// It looks like we need the additional id_count for this to
+// work correctly when there are multiple values.
+//  $return_id = "$id-multiselect";
+  $return_id = "$id-multiselect-". $id_count[$id]++;
+  $js_settings['dateMultiselect'][$return_id] = array(
+    'settings' => $settings + array('altField' => 'input#' . $return_id),
+  );
+  drupal_add_js($js_settings, 'setting');
+  return $return_id;
+}
+
+function date_multiselect_theme() {
+  return array(
+    'date_multiselect' => array('render element' => 'element'),
+  );
+}
+
+function date_multiselect_date_format($format) {
+  return (date_limit_format($format, array('year', 'month', 'day')));
+}
+
+function date_multiselect_implode_dates($items, $format) {
+  $return = '';
+  foreach ($items as $item) {
+    if ($item['value']) {
+      $value = date(date_multiselect_date_format($format), $item['value']);
+      $return = $return ? ("$return, $value") : $value;
+    }
+  }
+  return $return;
+}
+
+/**
+ * Implements hook_field_widget_form().
+ */
+function date_multiselect_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
+  // If this is a new entity, populate the field with the right default values.
+  // This happens early so even fields later hidden with #access get those values.
+  // We should only add default values to new entities, to avoid over-writing
+  // a value that has already been set. This means we can't just check to see
+  // if $items is empty, because it might have been set that way on purpose.
+  // @see date_field_widget_properties_alter() where we flagged if this is a new entity.
+
+  // We check !isset($items[$delta]['value']) because entity translation may create
+  // a new translation entity for an existing entity and we don't want to clobber
+  // values that were already set in that case.
+  // @see http://drupal.org/node/1478848.
+
+  $is_default = FALSE;
+  if (isset($element['#entity'])) {
+    $info = entity_get_info($element['#entity']->type);
+    $id = $info['entity keys']['id'];
+    $is_new = empty($element['#entity']->$id) ? TRUE : FALSE;
+
+    if ($is_new && !isset($items[$delta]['value'])) {
+      $default = date_default_value($field, $instance, $langcode);
+      $items[$delta] = $default[0];
+      $is_default = TRUE;
+    }
+  }
+
+  module_load_include('inc', 'date_api', 'date_api_elements');
+  $timezone = date_get_timezone($field['settings']['tz_handling'], isset($items[0]['timezone']) ? $items[0]['timezone'] : date_default_timezone());
+
+  // TODO see if there's a way to keep the timezone element from ever being
+  // nested as array('timezone' => 'timezone' => value)). After struggling
+  // with this a while, I can find no way to get it displayed in the form
+  // correctly and get it to use the timezone element without ending up
+  // with nesting.
+  if (is_array($timezone)) {
+    $timezone = $timezone['timezone'];
+  }
+
+  $element += array(
+    '#type' => 'textfield',
+    '#theme_wrappers' => array('date_multiselect'),
+    '#weight' => $delta,
+    '#size' => 50,
+    '#maxlenght' => 255,
+    '#date_timezone' => $timezone,
+    '#date_format' => variable_get('date_format_short', 'm/d/Y - H:i'),
+    '#element_validate' => array('date_multiselect_validate'),
+    '#date_is_default' => $is_default,
+    '#date_title' => $instance['label'],
+    '#element_validate' => array('date_multiselect_validate'),
+  );
+  $element['#default_value'] = date_multiselect_implode_dates($items, $element['#date_format']);
+
+  if ($field['settings']['tz_handling'] == 'date') {
+    $element['timezone'] = array(
+      '#type' => 'date_timezone',
+      '#theme_wrappers' => array('date_timezone'),
+      '#delta' => $delta,
+      '#default_value' => $timezone,
+      '#weight' => $instance['widget']['weight'] + 1,
+      '#attributes' => array('class' => array('date-no-float')),
+    );
+  }
+
+  $date = NULL;
+  if (isset($items[$delta]['value'])) {
+    $date = new DateObject($items[$delta]['value'], $timezone, date_multiselect_date_format($element['#date_format']));
+  }
+  $range = date_range_years($instance['widget']['settings']['year_range'], $date);
+  $year_range = date_range_string($range);
+
+  $settings = array(
+    'numberOfMonths' => (int)$instance['widget']['settings']['numberOfMonths'],
+    'firstDay' => intval(variable_get('date_first_day', 0)),
+    'dateFormat' => date_popup_format_to_popup(date_multiselect_date_format($element['#date_format']), 'datepicker'),
+    'yearRange' => $year_range,
+  );
+  if ($element['#default_value']) {
+    $settings['addDates'] = explode(', ', $element['#default_value']);
+  }
+
+  // Create a unique id for each set of custom settings.
+  $element['#id'] = date_multiselect_js_settings_id('multiselect-widget', $settings);
+  // we now have $element['#date_format'] defined
+  $element['#description'] = t('E.g., @date', array('@date' => date_format_date(date_example_date(), 'custom', date_multiselect_date_format($element['#date_format']))));
+
+  return $element;
+}
+
+/**
+ * Massage the input values back into a single date.
+ *
+ * When used as a Views widget, the validation step always gets triggered,
+ * even with no form submission. Before form submission $element['#value']
+ * contains a string, after submission it contains an array.
+ * TODO: support multiple dates
+ *
+ */
+function date_multiselect_validate($element, &$form_state) {
+  $items = array();
+  if ($element['#value']) {
+    $values = array_map('trim', explode(',', $element['#value']));
+    module_load_include('inc', 'date_api', 'date_api_elements');
+    $format = date_multiselect_date_format($element['#date_format']);
+    foreach ($values as $value) {
+      $date = new DateObject($value, $element['#date_timezone'], $format);
+      // If the date has errors, display them.
+      // If something was input but there is no date, the date is invalid.
+      // If the field is empty and required, set error message and return.
+      if (empty($date) || !empty($date->errors)) {
+        if (is_object($date) && !empty($date->errors)) {
+          $message = t('The value input for field %field is invalid:', array('%field' => $label));
+          $message .= '<br />' . implode('<br />', $date->errors);
+          form_set_error($element, $message);
+          return;
+        }
+        if (!empty($value)) {
+          $message = t('The value input for field %field is invalid.', array('%field' => $label));
+          form_set_error($element, $message);
+          return;
+        }
+      }
+      $items[] = array(
+        'value' => $date->getTimestamp(),
+        'timezone' => $element['#date_timezone'],
+      );
+    }
+
+    if (empty($items) && $element['#required']) {
+      $message = t('A valid date is required for %title.', array('%title' => $label));
+      form_set_error($element, $message);
+      return;
+    }
+  }
+
+  form_set_value($element, $items, $form_state);
+}
+
+/**
+ * Implements hook_field_widget_error().
+ */
+function date_multiselect_field_widget_error($element, $error, $form, &$form_state) {
+  form_error($element, $error['message']);
+}
+
+/**
+ * Format a date multiselect element.
+ *
+ * Use a class that will float date and time next to each other.
+ */
+function theme_date_multiselect($vars) {
+  $element = $vars['element'];
+  $attributes = !empty($element['#wrapper_attributes']) ? $element['#wrapper_attributes'] : array('class' => array());
+  $attributes['class'][] = 'container-inline-date';
+  // If there is no description, the floating date elements need some extra padding below them.
+  $wrapper_attributes = array('class' => array('date-padding'));
+  if (empty($element['value']['#description'])) {
+    $wrapper_attributes['class'][] = 'clearfix';
+  }
+  // Add an wrapper to mimic the way a single value field works, for ease in using #states.
+  if (isset($element['#children'])) {
+    $element['#children'] = '<div id="' . $element['#id'] . '" ' . drupal_attributes($wrapper_attributes) .'>' . $element['#children'] . '</div>';
+  }
+  return '<div ' . drupal_attributes($attributes) .'>' . theme('form_element', $element) . '</div>';
+}
