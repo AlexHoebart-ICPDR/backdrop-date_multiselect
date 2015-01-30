@@ -12,7 +12,7 @@ Drupal.behaviors.date_multiselect = {
         .addClass('date-multiselect-init')
         .wrap('<div id="' + id + '-wrapper" />')
         .parent().multiDatesPicker(dateMultiselect)
-        //.hide();
+      input.hide();
     }
   }
   }
