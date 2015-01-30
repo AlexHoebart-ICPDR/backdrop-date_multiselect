@@ -46,19 +46,19 @@ function date_multiselect_field_widget_settings_form($field, $instance) {
   $form['numberOfMonths'] = array(
     '#title' => t('Number of months to display'),
     '#type' => 'textfield',
-    '#default_value' => '2',
+    '#default_value' => $settings['numberOfMonths'],
     '#element_validate' => array('element_validate_integer'),
   );
   $form['minDate'] = array(
     '#title' => t('Minimum date realtive to the current date'),
     '#type' => 'textfield',
-    '#default_value' => '',
+    '#default_value' => $settings['minDate'],
     '#element_validate' => array('element_validate_number'),
   );
   $form['maxDate'] = array(
     '#title' => t('Maximum date realtive to the current date'),
     '#type' => 'textfield',
-    '#default_value' => '',
+    '#default_value' => $settings['maxDate'],
     '#element_validate' => array('element_validate_number'),
   );
   $form['year_range'] = array(
@@ -269,6 +269,9 @@ function date_multiselect_field_widget_form(&$form, &$form_state, $field, $insta
   }
   if (!empty($instance['widget']['settings']['maxDate'])) {
     $settings['maxDate'] = (int)$instance['widget']['settings']['maxDate'];
+  }
+  if ($field['cardinality'] != '-1') {
+    $settings['maxPicks'] = (int)$field['cardinality'];
   }
 
   // Create a unique id for each set of custom settings.
