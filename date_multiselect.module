@@ -219,7 +219,6 @@ function date_multiselect_field_widget_form(&$form, &$form_state, $field, $insta
     '#date_format' => variable_get('date_format_short', 'm/d/Y - H:i'),
     '#element_validate' => array('date_multiselect_validate'),
     '#date_is_default' => $is_default,
-    '#date_title' => $instance['label'],
     '#element_validate' => array('date_multiselect_validate'),
   );
   $element['#default_value'] = date_multiselect_implode_dates($items, $element['#date_format']);
@@ -282,15 +281,13 @@ function date_multiselect_validate($element, &$form_state) {
       // If the field is empty and required, set error message and return.
       if (empty($date) || !empty($date->errors)) {
         if (is_object($date) && !empty($date->errors)) {
-          $message = t('The value input for field %field is invalid:', array('%field' => $label));
+          $message = t('The value input for field %field is invalid:', array('%field' => $element['#title']));
           $message .= '<br />' . implode('<br />', $date->errors);
-          form_set_error($element, $message);
-          return;
+          form_error($element, $message);
         }
         if (!empty($value)) {
-          $message = t('The value input for field %field is invalid.', array('%field' => $label));
-          form_set_error($element, $message);
-          return;
+          $message = t('The value input for field %field is invalid.', array('%field' => $element['#title']));
+          form_error($element, $message);
         }
       }
       $items[] = array(
@@ -300,9 +297,8 @@ function date_multiselect_validate($element, &$form_state) {
     }
 
     if (empty($items) && $element['#required']) {
-      $message = t('A valid date is required for %title.', array('%title' => $label));
-      form_set_error($element, $message);
-      return;
+      $message = t('A valid date is required for %title.', array('%title' => $element['#title']));
+      form_error($element, $message);
     }
   }
 
