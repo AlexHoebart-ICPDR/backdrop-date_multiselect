@@ -47,6 +47,19 @@ function date_multiselect_field_widget_settings_form($field, $instance) {
     '#title' => t('Number of months to display'),
     '#type' => 'textfield',
     '#default_value' => '2',
+    '#element_validate' => array('element_validate_integer'),
+  );
+  $form['minDate'] = array(
+    '#title' => t('Minimum date realtive to the current date'),
+    '#type' => 'textfield',
+    '#default_value' => '',
+    '#element_validate' => array('element_validate_number'),
+  );
+  $form['maxDate'] = array(
+    '#title' => t('Maximum date realtive to the current date'),
+    '#type' => 'textfield',
+    '#default_value' => '',
+    '#element_validate' => array('element_validate_number'),
   );
   $form['year_range'] = array(
     '#type' => 'date_year_range',
@@ -250,6 +263,12 @@ function date_multiselect_field_widget_form(&$form, &$form_state, $field, $insta
   );
   if ($element['#default_value']) {
     $settings['addDates'] = explode(', ', $element['#default_value']);
+  }
+  if (!empty($instance['widget']['settings']['minDate'])) {
+    $settings['minDate'] = (int)$instance['widget']['settings']['minDate'];
+  }
+  if (!empty($instance['widget']['settings']['maxDate'])) {
+    $settings['maxDate'] = (int)$instance['widget']['settings']['maxDate'];
   }
 
   // Create a unique id for each set of custom settings.
