@@ -2,6 +2,7 @@
 /**
  * @file
  * A module to enable jquery calendar multiselect picker.
+ *
  * Requires the Date Popup module.
  *
  * Add a type of #date_multiselect to any date or datetime field that will
@@ -14,6 +15,9 @@
  *
  */
 
+/**
+ * Implements hook_field_widget_info().
+ */
 function date_multiselect_field_widget_info() {
   $settings = array(
     'settings' => array(
@@ -31,7 +35,7 @@ function date_multiselect_field_widget_info() {
   );
 
   $info['date_multiselect'] = array(
-    'label' =>  t('Multiselect calendar'),
+    'label' => t('Multiselect calendar'),
     'field types' => array('date', 'datestamp', 'datetime'),
   ) + $settings;
 
@@ -108,7 +112,7 @@ function date_multiselect_library() {
 /**
  * Get the location of the multidatespicker library.
  *
- * @return
+ * @return mixed
  *   The location of the library, or FALSE if the library isn't installed.
  */
 function date_multiselect_get_multidatespicker_path() {
@@ -140,6 +144,8 @@ function date_multiselect_get_multidatespicker_path() {
 }
 
 /**
+ * Create a unique CSS id and output a single inline JS block for settings.
+ *
  * Create a unique CSS id name and output a single inline JS block for
  * each startup function to call and settings array to pass it.  This
  * used to create a unique CSS class for each unique combination of
@@ -150,14 +156,12 @@ function date_multiselect_get_multidatespicker_path() {
  * putting the ids for each unique function/settings combo into
  * Drupal.settings and searching for each listed id.
  *
- * @param $pfx
+ * @param string $id
  *   The CSS class prefix to search the DOM for.
- *   TODO : unused ?
- * @param $settings
+ * @param array $settings
  *   The settings array to pass to the jQuery function.
- * @returns
- *   The CSS id to assign to the element that should have
- * $func($settings) invoked on it.
+ * @return string
+ *   The CSS id to assign to the element.
  */
 function date_multiselect_js_settings_id($id, $settings) {
   static $js_added = FALSE;
@@ -166,15 +170,15 @@ function date_multiselect_js_settings_id($id, $settings) {
   // Make sure multiselect date selector grid is in correct year.
   if (!empty($settings['yearRange'])) {
     $parts = explode(':', $settings['yearRange']);
-    // Set the default date to 0 or the lowest bound if the date ranges do not include the current year
-    // Necessary for the datepicker to render and select dates correctly
-    $defaultDate = ($parts[0] > 0 || 0 > $parts[1]) ? $parts[0] : 0;
-    $settings += array('defaultDate' => (string) $defaultDate . 'y');
+    // Set the default date to 0 or the lowest bound.
+    // Necessary for the datepicker to render and select dates correctly.
+    $default_date = ($parts[0] > 0 || 0 > $parts[1]) ? $parts[0] : 0;
+    $settings += array('defaultDate' => (string) $default_date . 'y');
   }
 
   if (!$js_added) {
     date_multiselect_add();
-    drupal_add_js(drupal_get_path('module', 'date_multiselect') .'/js/date_multiselect.js');
+    drupal_add_js(drupal_get_path('module', 'date_multiselect') . '/js/date_multiselect.js');
     $js_added = TRUE;
   }
 
@@ -184,10 +188,7 @@ function date_multiselect_js_settings_id($id, $settings) {
     $id_count[$id] = 0;
   }
 
-// It looks like we need the additional id_count for this to
-// work correctly when there are multiple values.
-//  $return_id = "$id-multiselect";
-  $return_id = "$id-multiselect-". $id_count[$id]++;
+  $return_id = "$id-multiselect-" . $id_count[$id]++;
   $js_settings['dateMultiselect'][$return_id] = array(
     'settings' => $settings + array('altField' => 'input#' . $return_id),
   );
@@ -195,16 +196,16 @@ function date_multiselect_js_settings_id($id, $settings) {
   return $return_id;
 }
 
-function date_multiselect_theme() {
-  return array(
-    'date_multiselect' => array('render element' => 'element'),
-  );
-}
-
+/**
+ * Limit date granularity to year, month and day
+ */
 function date_multiselect_date_format($format) {
   return (date_limit_format($format, array('year', 'month', 'day')));
 }
 
+/**
+ * Implode the date values array into a comma separated string of dates.
+ */
 function date_multiselect_implode_dates($items, $format) {
   $return = '';
   foreach ($items as $item) {
@@ -259,7 +260,6 @@ function date_multiselect_field_widget_form(&$form, &$form_state, $field, $insta
 
   $element += array(
     '#type' => 'textfield',
-    '#theme_wrappers' => array('date_multiselect'),
     '#weight' => $delta,
     '#size' => 50,
     '#maxlenght' => 255,
@@ -290,7 +290,7 @@ function date_multiselect_field_widget_form(&$form, &$form_state, $field, $insta
   $year_range = date_range_string($range);
 
   $settings = array(
-    'numberOfMonths' => (int)$instance['widget']['settings']['numberOfMonths'],
+    'numberOfMonths' => (int) $instance['widget']['settings']['numberOfMonths'],
     'firstDay' => intval(variable_get('date_first_day', 0)),
     'dateFormat' => date_popup_format_to_popup(date_multiselect_date_format($element['#date_format']), 'datepicker'),
     'yearRange' => $year_range,
@@ -299,19 +299,20 @@ function date_multiselect_field_widget_form(&$form, &$form_state, $field, $insta
     $settings['addDates'] = explode(', ', $element['#default_value']);
   }
   if (!empty($instance['widget']['settings']['minDate'])) {
-    $settings['minDate'] = (int)$instance['widget']['settings']['minDate'];
+    $settings['minDate'] = (int) $instance['widget']['settings']['minDate'];
   }
   if (!empty($instance['widget']['settings']['maxDate'])) {
-    $settings['maxDate'] = (int)$instance['widget']['settings']['maxDate'];
+    $settings['maxDate'] = (int) $instance['widget']['settings']['maxDate'];
   }
   if ($field['cardinality'] != '-1') {
-    $settings['maxPicks'] = (int)$field['cardinality'];
+    $settings['maxPicks'] = (int) $field['cardinality'];
   }
 
   // Create a unique id for each set of custom settings.
   $element['#id'] = date_multiselect_js_settings_id('multiselect-widget', $settings);
-  // we now have $element['#date_format'] defined
-  $element['#description'] = t('E.g., @date', array('@date' => date_format_date(date_example_date(), 'custom', date_multiselect_date_format($element['#date_format']))));
+  // We now have $element['#date_format'] defined.
+  $date_example = date_format_date(date_example_date(), 'custom', date_multiselect_date_format($element['#date_format']));
+  $element['#description'] = t('E.g., @date', array('@date' => $date_example));
 
   return $element;
 }
@@ -322,8 +323,6 @@ function date_multiselect_field_widget_form(&$form, &$form_state, $field, $insta
  * When used as a Views widget, the validation step always gets triggered,
  * even with no form submission. Before form submission $element['#value']
  * contains a string, after submission it contains an array.
- * TODO: support multiple dates
- *
  */
 function date_multiselect_validate($element, &$form_state) {
   $items = array();
@@ -367,25 +366,4 @@ function date_multiselect_validate($element, &$form_state) {
  */
 function date_multiselect_field_widget_error($element, $error, $form, &$form_state) {
   form_error($element, $error['message']);
-}
-
-/**
- * Format a date multiselect element.
- *
- * Use a class that will float date and time next to each other.
- */
-function theme_date_multiselect($vars) {
-  $element = $vars['element'];
-  $attributes = !empty($element['#wrapper_attributes']) ? $element['#wrapper_attributes'] : array('class' => array());
-  $attributes['class'][] = 'container-inline-date';
-  // If there is no description, the floating date elements need some extra padding below them.
-  $wrapper_attributes = array('class' => array('date-padding'));
-  if (empty($element['value']['#description'])) {
-    $wrapper_attributes['class'][] = 'clearfix';
-  }
-  // Add an wrapper to mimic the way a single value field works, for ease in using #states.
-  if (isset($element['#children'])) {
-    $element['#children'] = '<div id="' . $element['#id'] . '" ' . drupal_attributes($wrapper_attributes) .'>' . $element['#children'] . '</div>';
-  }
-  return '<div ' . drupal_attributes($attributes) .'>' . theme('form_element', $element) . '</div>';
 }
