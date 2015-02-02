@@ -12,7 +12,6 @@
  *
  * No time elements are included in the format string, only the date
  * will be saved.
- *
  */
 
 /**
@@ -160,10 +159,11 @@ function date_multiselect_get_multidatespicker_path() {
  *   The CSS class prefix to search the DOM for.
  * @param array $settings
  *   The settings array to pass to the jQuery function.
+ *
  * @return string
  *   The CSS id to assign to the element.
  */
-function date_multiselect_js_settings_id($id, $settings) {
+function date_multiselect_js_settings_id($id, array $settings) {
   static $js_added = FALSE;
   static $id_count = array();
 
@@ -197,7 +197,7 @@ function date_multiselect_js_settings_id($id, $settings) {
 }
 
 /**
- * Limit date granularity to year, month and day
+ * Limit date granularity to year, month and day.
  */
 function date_multiselect_date_format($format) {
   return (date_limit_format($format, array('year', 'month', 'day')));
@@ -222,23 +222,19 @@ function date_multiselect_implode_dates($items, $format) {
  */
 function date_multiselect_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
   // If this is a new entity, populate the field with the right default values.
-  // This happens early so even fields later hidden with #access get those values.
   // We should only add default values to new entities, to avoid over-writing
   // a value that has already been set. This means we can't just check to see
   // if $items is empty, because it might have been set that way on purpose.
-  // @see date_field_widget_properties_alter() where we flagged if this is a new entity.
-
-  // We check !isset($items[$delta]['value']) because entity translation may create
-  // a new translation entity for an existing entity and we don't want to clobber
-  // values that were already set in that case.
-  // @see http://drupal.org/node/1478848.
-
   $is_default = FALSE;
   if (isset($element['#entity'])) {
     $info = entity_get_info($element['#entity']->type);
     $id = $info['entity keys']['id'];
     $is_new = empty($element['#entity']->$id) ? TRUE : FALSE;
 
+    // We check !isset($items[$delta]['value']) because entity translation may create
+    // a new translation entity for an existing entity and we don't want to clobber
+    // values that were already set in that case.
+    // @see http://drupal.org/node/1478848.
     if ($is_new && !isset($items[$delta]['value'])) {
       $default = date_default_value($field, $instance, $langcode);
       $items[$delta] = $default[0];
