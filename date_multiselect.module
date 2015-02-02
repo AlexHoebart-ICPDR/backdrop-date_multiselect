@@ -93,16 +93,50 @@ function date_multiselect_add() {
 function date_multiselect_library() {
   $libraries = array();
 
-  $path = drupal_get_path('module', 'date_multiselect');
+  $path = date_multiselect_get_multidatespicker_path();
   $libraries['multidatespicker'] = array(
     'title' => 'MultiDatesPicker',
     'website' => 'http://multidatespickr.sourceforge.net/',
     'version' => '1.6.3',
     'js' => array(
-      $path . '/js/jquery-ui.multidatespicker.js' => array(),
+      $path . '/jquery-ui.multidatespicker.js' => array('group' => 'JS_LIBRARY'),
     ),
   );
   return $libraries;
+}
+
+/**
+ * Get the location of the multidatespicker library.
+ *
+ * @return
+ *   The location of the library, or FALSE if the library isn't installed.
+ */
+function date_multiselect_get_multidatespicker_path() {
+  if (function_exists('libraries_get_path')) {
+    return libraries_get_path('multidatespicker');
+  }
+
+  // The following logic is taken from libraries_get_libraries()
+  $searchdir = array();
+
+  // Similar to 'modules' and 'themes' directories inside an installation
+  // profile, installation profiles may want to place libraries into a
+  // 'libraries' directory.
+  $searchdir[] = 'profiles/' . drupal_get_profile() . '/libraries';
+
+  // Always search sites/all/libraries.
+  $searchdir[] = 'sites/all/libraries';
+
+  // Also search sites/<domain>/*.
+  $searchdir[] = conf_path() . '/libraries';
+
+  foreach ($searchdir as $dir) {
+    if (file_exists($dir . '/multidatespicker/jquery-ui.multidatespicker.js')) {
+      return $dir . '/multidatespicker';
+    }
+  }
+
+  return FALSE;
 }
 
 /**
