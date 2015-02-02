@@ -1,6 +1,7 @@
 /**
  * Attaches the calendar behavior to all required fields.
  */
+
 (function ($) {
 Drupal.behaviors.date_multiselect = {
   attach: function (context) {

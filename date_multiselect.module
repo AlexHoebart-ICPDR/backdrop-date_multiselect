@@ -231,9 +231,9 @@ function date_multiselect_field_widget_form(&$form, &$form_state, $field, $insta
     $id = $info['entity keys']['id'];
     $is_new = empty($element['#entity']->$id) ? TRUE : FALSE;
 
-    // We check !isset($items[$delta]['value']) because entity translation may create
-    // a new translation entity for an existing entity and we don't want to clobber
-    // values that were already set in that case.
+    // We check !isset($items[$delta]['value']) because entity translation may
+    // create a new translation entity for an existing entity and we don't want
+    // to clobber values that were already set in that case.
     // @see http://drupal.org/node/1478848.
     if ($is_new && !isset($items[$delta]['value'])) {
       $default = date_default_value($field, $instance, $langcode);
