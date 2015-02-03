@@ -23,6 +23,11 @@ Drupal.behaviors.date_multiselect = {
 };
 })(jQuery);
 
+/**
+ * Return the minimum date, either the minDate or the firstDate.
+ *
+ * minDate is either an offset of the current date in days.
+ */
 function getMinDate(minDate, firstDate, format) {
   if (typeof minDate == 'string') {
     var minDateObj = jQuery.datepicker.parseDate(format, minDate);
