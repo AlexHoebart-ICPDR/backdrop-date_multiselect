@@ -85,8 +85,10 @@ function date_multiselect_add() {
     return;
   }
 
-  date_popup_add();
+  drupal_add_library('system', 'ui.datepicker');
   drupal_add_library('date_multiselect', 'multidatespicker');
+  drupal_add_js(drupal_get_path('module', 'date_multiselect') . '/js/date_multiselect.js');
+
   $loaded = TRUE;
 }
 
@@ -178,7 +180,6 @@ function date_multiselect_js_settings_id($id, array $settings) {
 
   if (!$js_added) {
     date_multiselect_add();
-    drupal_add_js(drupal_get_path('module', 'date_multiselect') . '/js/date_multiselect.js');
     $js_added = TRUE;
   }
 
