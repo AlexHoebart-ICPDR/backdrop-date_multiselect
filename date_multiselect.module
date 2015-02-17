@@ -265,6 +265,7 @@ function date_multiselect_field_widget_form(&$form, &$form_state, $field, $insta
     '#element_validate' => array('date_multiselect_validate'),
     '#date_is_default' => $is_default,
     '#element_validate' => array('date_multiselect_validate'),
+    '#process' => array('date_multiselect_element_process'),
   );
   $element['#default_value'] = date_multiselect_implode_dates($items, $element['#date_format']);
 
@@ -279,9 +280,27 @@ function date_multiselect_field_widget_form(&$form, &$form_state, $field, $insta
     );
   }
 
+  // We now have $element['#date_format'] defined.
+  $date_example = date_format_date(date_example_date(), 'custom', date_multiselect_date_format($element['#date_format']));
+  $element['#description'] = t('E.g., @date', array('@date' => $date_example));
+
+  return $element;
+}
+
+/**
+ * Javascript multiselect element processing.
+ *
+ * Add multiselect attributes to the element and include JS files. This is done here
+ * instead of on the hook_field_widget_form function to avoid not including the JS
+ * when showing the form from cache (like after a validation error).
+ */
+function date_multiselect_element_process($element, &$form_state, $form) {
+  $instance = field_widget_instance($element, $form_state);
+  $field = field_widget_field($element, $form_state);
   $date = NULL;
-  if (isset($items[$delta]['value'])) {
-    $date = new DateObject($items[$delta]['value'], $timezone, date_multiselect_date_format($element['#date_format']));
+  if (isset($element['#value'])) {
+    $values = array_map('trim', explode(',', $element['#value']));
+    $date = new DateObject(array_shift($values), $element['#date_timezone'], date_multiselect_date_format($element['#date_format']));
   }
   $range = date_range_years($instance['widget']['settings']['year_range'], $date);
   $year_range = date_range_string($range);
@@ -307,9 +326,6 @@ function date_multiselect_field_widget_form(&$form, &$form_state, $field, $insta
 
   // Create a unique id for each set of custom settings.
   $element['#id'] = date_multiselect_js_settings_id('multiselect-widget', $settings);
-  // We now have $element['#date_format'] defined.
-  $date_example = date_format_date(date_example_date(), 'custom', date_multiselect_date_format($element['#date_format']));
-  $element['#description'] = t('E.g., @date', array('@date' => $date_example));
 
   return $element;
 }
