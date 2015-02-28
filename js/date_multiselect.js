@@ -9,7 +9,8 @@ Drupal.behaviors.date_multiselect = {
       var input = $('input#' + id);
       if (!input.hasClass('date-multiselect-init')) {
         settings = Drupal.settings.dateMultiselect[id].settings;
-        if (settings.hasOwnProperty('minDate') && settings.hasOwnProperty('addDates')) {
+        if (input.val() != '') {
+          settings.addDates = input.val().split(', ');
           settings.minDate = getMinDate(settings.minDate, settings.addDates[0], settings.dateFormat);
         }
         input

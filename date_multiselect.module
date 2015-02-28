@@ -222,29 +222,8 @@ function date_multiselect_implode_dates($items, $format) {
  * Implements hook_field_widget_form().
  */
 function date_multiselect_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
-  // If this is a new entity, populate the field with the right default values.
-  // We should only add default values to new entities, to avoid over-writing
-  // a value that has already been set. This means we can't just check to see
-  // if $items is empty, because it might have been set that way on purpose.
-  $is_default = FALSE;
-  if (isset($element['#entity'])) {
-    $info = entity_get_info($element['#entity']->type);
-    $id = $info['entity keys']['id'];
-    $is_new = empty($element['#entity']->$id) ? TRUE : FALSE;
-
-    // We check !isset($items[$delta]['value']) because entity translation may
-    // create a new translation entity for an existing entity and we don't want
-    // to clobber values that were already set in that case.
-    // @see http://drupal.org/node/1478848.
-    if ($is_new && !isset($items[$delta]['value'])) {
-      $default = date_default_value($field, $instance, $langcode);
-      $items[$delta] = $default[0];
-      $is_default = TRUE;
-    }
-  }
-
   module_load_include('inc', 'date_api', 'date_api_elements');
-  $timezone = date_get_timezone($field['settings']['tz_handling'], isset($items[0]['timezone']) ? $items[0]['timezone'] : date_default_timezone());
+  $timezone = date_default_timezone();
 
   // TODO see if there's a way to keep the timezone element from ever being
   // nested as array('timezone' => 'timezone' => value)). After struggling
@@ -262,8 +241,6 @@ function date_multiselect_field_widget_form(&$form, &$form_state, $field, $insta
     '#maxlenght' => 255,
     '#date_timezone' => $timezone,
     '#date_format' => variable_get('date_format_short', 'm/d/Y - H:i'),
-    '#element_validate' => array('date_multiselect_validate'),
-    '#date_is_default' => $is_default,
     '#element_validate' => array('date_multiselect_validate'),
     '#process' => array('date_multiselect_element_process'),
   );
@@ -311,9 +288,6 @@ function date_multiselect_element_process($element, &$form_state, $form) {
     'dateFormat' => date_popup_format_to_popup(date_multiselect_date_format($element['#date_format']), 'datepicker'),
     'yearRange' => $year_range,
   );
-  if ($element['#default_value']) {
-    $settings['addDates'] = explode(', ', $element['#default_value']);
-  }
   if (!empty($instance['widget']['settings']['minDate'])) {
     $settings['minDate'] = (int) $instance['widget']['settings']['minDate'];
   }
