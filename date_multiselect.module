@@ -257,10 +257,6 @@ function date_multiselect_field_widget_form(&$form, &$form_state, $field, $insta
     );
   }
 
-  // We now have $element['#date_format'] defined.
-  $date_example = date_format_date(date_example_date(), 'custom', date_multiselect_date_format($element['#date_format']));
-  $element['#description'] = t('E.g., @date', array('@date' => $date_example));
-
   return $element;
 }
 
