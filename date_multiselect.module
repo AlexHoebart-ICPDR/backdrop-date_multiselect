@@ -253,9 +253,9 @@ function date_multiselect_field_widget_form(&$form, &$form_state, $field, $insta
 /**
  * Javascript multiselect element processing.
  *
- * Add multiselect attributes to the element and include JS files. This is done here
- * instead of on the hook_field_widget_form function to avoid not including the JS
- * when showing the form from cache (like after a validation error).
+ * Add multiselect attributes to the element and include JS files. This is done
+ * here instead of on the hook_field_widget_form function to avoid not including
+ * the JS when showing the form from cache (like after a validation error).
  */
 function date_multiselect_element_process($element, &$form_state, $form) {
   $instance = field_widget_instance($element, $form_state);
