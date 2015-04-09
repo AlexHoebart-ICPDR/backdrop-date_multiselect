@@ -79,24 +79,15 @@ function date_multiselect_field_widget_settings_form($field, $instance) {
  * Play nice with jQuery UI.
  */
 function date_multiselect_add() {
-  static $loaded = FALSE;
-  if ($loaded) {
-    return;
-  }
-
   drupal_add_library('system', 'ui.datepicker');
   drupal_add_library('date_multiselect', 'multidatespicker');
   drupal_add_js(drupal_get_path('module', 'date_multiselect') . '/js/date_multiselect.js');
-
-  $loaded = TRUE;
 }
 
 /**
  * Implements hook_library().
  */
 function date_multiselect_library() {
-  $libraries = array();
-
   $path = date_multiselect_get_multidatespicker_path();
   $libraries['multidatespicker'] = array(
     'title' => 'MultiDatesPicker',
