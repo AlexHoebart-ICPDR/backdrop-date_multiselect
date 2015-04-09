@@ -25,7 +25,8 @@ Drupal.behaviors.date_multiselect = {
   /**
    * Return the minimum date, either the minDate or the firstDate.
    *
-   * minDate is either an offset of the current date in days.
+   * @param minDate is either an date string or an int offset of the current
+   *    date in days.
    */
   getMinDate: function (minDate, firstDate, format) {
     var minDateObj = null;

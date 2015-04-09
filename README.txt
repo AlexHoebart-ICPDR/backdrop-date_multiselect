@@ -18,7 +18,7 @@ This module requires the following modules:
 
 INSTALLATION
 ------------
- 1. Download the MultiDatesPicker plugin (http://multidatespickr.sourceforge.net/
+ 1. Download the MultiDatesPicker plugin (http://multidatespickr.sourceforge.net
     version 1.6.3 is recommended) and extract the file under
     sites/all/libraries/multidatespicker. You should now have a
     sites/all/libraries/multidatespicker/jquery-ui.multidatespicker.js file.
