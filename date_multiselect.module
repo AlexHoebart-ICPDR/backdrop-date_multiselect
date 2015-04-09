@@ -156,8 +156,8 @@ function date_multiselect_get_multidatespicker_path() {
  *   The CSS id to assign to the element.
  */
 function date_multiselect_js_settings_id($id, array $settings) {
-  static $js_added = FALSE;
-  static $id_count = array();
+  $js_added = &drupal_static(__FUNCTION__);
+  $id_count = &drupal_static(__FUNCTION__);
 
   // Make sure multiselect date selector grid is in correct year.
   if (!empty($settings['yearRange'])) {
@@ -168,7 +168,7 @@ function date_multiselect_js_settings_id($id, array $settings) {
     $settings += array('defaultDate' => (string) $default_date . 'y');
   }
 
-  if (!$js_added) {
+  if (!isset($js_added)) {
     date_multiselect_add();
     $js_added = TRUE;
   }
