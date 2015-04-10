@@ -18,7 +18,9 @@
  * Implements hook_field_widget_info().
  */
 function date_multiselect_field_widget_info() {
-  $settings = array(
+  $info['date_multiselect'] = array(
+    'label' => t('Multiselect calendar'),
+    'field types' => array('date', 'datestamp', 'datetime'),
     'settings' => array(
       'input_format' => date_default_format('date_select'),
       'input_format_custom' => '',
@@ -31,13 +33,9 @@ function date_multiselect_field_widget_info() {
       'default value' => FIELD_BEHAVIOR_NONE,
       'multiple values' => FIELD_BEHAVIOR_CUSTOM,
     ),
-    'date_multiselect' => array(
-      'label' => t('Multiselect calendar'),
-      'field types' => array('date', 'datestamp', 'datetime'),
-    ),
   );
 
-  return $settings;
+  return $info;
 }
 
 /**
