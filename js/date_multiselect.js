@@ -11,7 +11,7 @@ Drupal.behaviors.date_multiselect = {
         var settings = Drupal.settings.dateMultiselect[id].settings;
         if (input.val()) {
           settings.addDates = input.val().split(', ');
-          settings.minDate = getMinDate(settings.minDate, settings.addDates[0], settings.dateFormat);
+          settings.minDate = this.getMinDate(settings.minDate, settings.addDates[0], settings.dateFormat);
         }
         input
           .addClass('date-multiselect-init')
