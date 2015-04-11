@@ -6,13 +6,13 @@
  * Requires the Date Popup module.
  *
  * Add a type of #date_multiselect to any date or datetime field that will
- * use this widget. Set #date_format to the way the date should be presented
- * to the user in the form. Set #default_value to be a date in the local
- * timezone, and note the timezone name in #date_timezone.
+ * use this widget.
  *
  * No time elements are included in the format string, only the date
  * will be saved.
  */
+
+define('DATE_MULTISELECT_FORMAT', 'Y-m-d');
 
 /**
  * Implements hook_field_widget_info().
@@ -186,20 +186,13 @@ function date_multiselect_js_settings_id($id, array $settings) {
 }
 
 /**
- * Limit date granularity to year, month and day.
- */
-function date_multiselect_date_format($format) {
-  return (date_limit_format($format, array('year', 'month', 'day')));
-}
-
-/**
  * Implode the date values array into a comma separated string of dates.
  */
-function date_multiselect_implode_dates($items, $format) {
+function date_multiselect_implode_dates($items) {
   $return = '';
   foreach ($items as $item) {
     if ($item['value']) {
-      $value = date(date_multiselect_date_format($format), $item['value']);
+      $value = date(DATE_MULTISELECT_FORMAT, $item['value']);
       $return = $return ? ("$return, $value") : $value;
     }
   }
@@ -228,11 +221,10 @@ function date_multiselect_field_widget_form(&$form, &$form_state, $field, $insta
     '#size' => 50,
     '#maxlength' => 512,
     '#date_timezone' => $timezone,
-    '#date_format' => variable_get('date_format_short', 'm/d/Y - H:i'),
     '#element_validate' => array('date_multiselect_validate'),
     '#process' => array('date_multiselect_element_process'),
   );
-  $element['#default_value'] = date_multiselect_implode_dates($items, $element['#date_format']);
+  $element['#default_value'] = date_multiselect_implode_dates($items);
 
   if ($field['settings']['tz_handling'] == 'date') {
     $element['timezone'] = array(
@@ -261,7 +253,7 @@ function date_multiselect_element_process($element, &$form_state, $form) {
   $date = NULL;
   if (isset($element['#value'])) {
     $values = array_map('trim', explode(',', $element['#value']));
-    $date = new DateObject(array_shift($values), $element['#date_timezone'], date_multiselect_date_format($element['#date_format']));
+    $date = new DateObject(array_shift($values), $element['#date_timezone'], DATE_MULTISELECT_FORMAT);
   }
   $range = date_range_years($instance['widget']['settings']['year_range'], $date);
   $year_range = date_range_string($range);
@@ -269,7 +261,7 @@ function date_multiselect_element_process($element, &$form_state, $form) {
   $settings = array(
     'numberOfMonths' => (int) $instance['widget']['settings']['numberOfMonths'],
     'firstDay' => intval(variable_get('date_first_day', 0)),
-    'dateFormat' => date_popup_format_to_popup(date_multiselect_date_format($element['#date_format']), 'datepicker'),
+    'dateFormat' => DATE_MULTISELECT_FORMAT,
     'yearRange' => $year_range,
   );
   if (!empty($instance['widget']['settings']['minDate'])) {
@@ -300,9 +292,8 @@ function date_multiselect_validate($element, &$form_state) {
   if ($element['#value']) {
     $values = array_map('trim', explode(',', $element['#value']));
     module_load_include('inc', 'date_api', 'date_api_elements');
-    $format = date_multiselect_date_format($element['#date_format']);
     foreach ($values as $value) {
-      $date = new DateObject($value, $element['#date_timezone'], $format);
+      $date = new DateObject($value, $element['#date_timezone'], DATE_MULTISELECT_FORMAT);
       // If the date has errors, display them.
       // If something was input but there is no date, the date is invalid.
       // If the field is empty and required, set error message and return.
