@@ -15,6 +15,9 @@ REQUIREMENTS
 This module requires the following modules:
  * Date (https://www.drupal.org/project/date)
 
+And the following javascript libraries:
+ * MultiDatesPicker plugin (http://multidatespickr.sourceforge.net)
+
 
 INSTALLATION
 ------------
