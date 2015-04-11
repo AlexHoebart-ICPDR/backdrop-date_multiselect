@@ -22,12 +22,10 @@ function date_multiselect_field_widget_info() {
     'label' => t('Multiselect calendar'),
     'field types' => array('date', 'datestamp', 'datetime'),
     'settings' => array(
-      'input_format' => date_default_format('date_select'),
-      'input_format_custom' => '',
-      'increment' => 15,
-      'text_parts' => array(),
       'year_range' => '-3:+3',
       'numberOfMonths' => '2',
+      'minDate' => '',
+      'maxDate' => '',
     ),
     'behaviors' => array(
       'default value' => FIELD_BEHAVIOR_NONE,
@@ -50,16 +48,18 @@ function date_multiselect_field_widget_settings_form($field, $instance) {
     '#element_validate' => array('element_validate_integer'),
   );
   $form['minDate'] = array(
-    '#title' => t('Minimum date realtive to the current date'),
+    '#title' => t('Minimum date relative to the current date'),
     '#type' => 'textfield',
     '#default_value' => $settings['minDate'],
     '#element_validate' => array('element_validate_number'),
+    '#description' => t('A number of days from today. For example 2 represents two days from today and -1 represents yesterday.'),
   );
   $form['maxDate'] = array(
-    '#title' => t('Maximum date realtive to the current date'),
+    '#title' => t('Maximum date relative to the current date'),
     '#type' => 'textfield',
     '#default_value' => $settings['maxDate'],
     '#element_validate' => array('element_validate_number'),
+    '#description' => t('A number of days from today. For example 2 represents two days from today and -1 represents yesterday.'),
   );
   $form['year_range'] = array(
     '#type' => 'date_year_range',
