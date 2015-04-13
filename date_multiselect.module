@@ -15,7 +15,7 @@
 define('DATE_MULTISELECT_FORMAT', 'm/d/Y');
 
 /**
- * Implements hook_date_field_settings_form_alter.
+ * Implements hook_date_field_settings_form_alter().
  *
  * If we select date_multiselect as the widget, we shouldn't allow and enddate
  * field and the granularity must be ['year', 'month', 'day'].
@@ -208,8 +208,8 @@ function date_multiselect_js_settings_id($id, array $settings) {
 /**
  * Implode the date values array into a comma separated string of dates.
  *
- * @param array $items
- *  It contains all the values of the field.
+ * @param $items
+ *   It contains all the values of the field.
  */
 function date_multiselect_implode_dates($items) {
   $return = '';
