@@ -12,7 +12,7 @@
  * will be saved.
  */
 
-define('DATE_MULTISELECT_FORMAT', 'Y-m-d');
+define('DATE_MULTISELECT_FORMAT', 'm/d/Y');
 
 /**
  * Implements hook_field_widget_info().
@@ -187,6 +187,9 @@ function date_multiselect_js_settings_id($id, array $settings) {
 
 /**
  * Implode the date values array into a comma separated string of dates.
+ *
+ * @param array $items
+ *  It contains all the values of the field.
  */
 function date_multiselect_implode_dates($items) {
   $return = '';
@@ -261,7 +264,7 @@ function date_multiselect_element_process($element, &$form_state, $form) {
   $settings = array(
     'numberOfMonths' => (int) $instance['widget']['settings']['numberOfMonths'],
     'firstDay' => intval(variable_get('date_first_day', 0)),
-    'dateFormat' => DATE_MULTISELECT_FORMAT,
+    'dateFormat' => date_popup_format_to_popup(DATE_MULTISELECT_FORMAT),
     'yearRange' => $year_range,
   );
   if (!empty($instance['widget']['settings']['minDate'])) {
