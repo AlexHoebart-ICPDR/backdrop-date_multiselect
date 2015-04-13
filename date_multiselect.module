@@ -15,6 +15,26 @@
 define('DATE_MULTISELECT_FORMAT', 'm/d/Y');
 
 /**
+ * Implements hook_date_field_settings_form_alter.
+ *
+ * If we select date_multiselect as the widget, we shouldn't allow and enddate
+ * field and the granularity must be ['year', 'month', 'day'].
+ */
+function date_multiselect_date_field_settings_form_alter(&$form, $context) {
+  if ($context['instance']['widget']['type'] == 'date_multiselect') {
+    $form['granularity']['#type'] = 'value';
+    $form['granularity']['#default_value'] = array('year', 'month', 'day');
+    unset($form['granularity']['year']);
+
+    $form['enddate_get']['#type'] = 'value';
+    $form['enddate_get']['#default_value'] = FALSE;
+
+    $form['enddate_required']['#type'] = 'value';
+    $form['enddate_required']['#default_value'] = FALSE;
+  }
+}
+
+/**
  * Implements hook_field_widget_info().
  */
 function date_multiselect_field_widget_info() {
