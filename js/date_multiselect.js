@@ -13,6 +13,9 @@ Drupal.behaviors.date_multiselect = {
           settings.addDates = input.val().split(', ');
           settings.minDate = this.getMinDate(settings.minDate, settings.addDates[0], settings.dateFormat);
         }
+        if ($(window).width() <= 380) {
+          settings.numberOfMonths = 1;
+        }
         input
           .addClass('date-multiselect-init')
           .wrap('<div id="' + id + '-wrapper" />')
