@@ -98,58 +98,28 @@ function date_multiselect_field_widget_settings_form($field, $instance) {
  */
 function date_multiselect_add() {
   drupal_add_library('system', 'ui.datepicker');
-  drupal_add_library('date_multiselect', 'multidatespicker');
+  libraries_load('multidatespicker');
   drupal_add_js(drupal_get_path('module', 'date_multiselect') . '/js/date_multiselect.js');
 }
 
 /**
- * Implements hook_library().
+ * Implements hook_libraries_info().
  */
-function date_multiselect_library() {
-  $path = date_multiselect_get_multidatespicker_path();
+function date_multiselect_libraries_info() {
   $libraries['multidatespicker'] = array(
-    'title' => 'MultiDatesPicker',
-    'website' => 'http://multidatespickr.sourceforge.net/',
-    'version' => '1.6.3',
-    'js' => array(
-      $path . '/jquery-ui.multidatespicker.js' => array('group' => 'JS_LIBRARY'),
+    'name' => 'MultiDatesPicker',
+    'vendor url' => 'http://multidatespickr.sourceforge.net/',
+    'download url' => 'http://sourceforge.net/projects/multidatespickr/files/MultiDatesPicker%20v1.6.3.zip/download',
+    'version arguments' => array(
+      'file' => 'jquery-ui.multidatespicker.js',
+      'pattern' => '/MultiDatesPicker\s+v([0-9\.]+)/',
+      'lines' => 5,
+    ),
+    'files' => array(
+      'js' => array('jquery-ui.multidatespicker.js'),
     ),
   );
   return $libraries;
-}
-
-/**
- * Get the location of the multidatespicker library.
- *
- * @return mixed
- *   The location of the library, or FALSE if the library isn't installed.
- */
-function date_multiselect_get_multidatespicker_path() {
-  if (function_exists('libraries_get_path')) {
-    return libraries_get_path('multidatespicker');
-  }
-
-  // The following logic is taken from libraries_get_libraries()
-  $searchdir = array();
-
-  // Similar to 'modules' and 'themes' directories inside an installation
-  // profile, installation profiles may want to place libraries into a
-  // 'libraries' directory.
-  $searchdir[] = 'profiles/' . drupal_get_profile() . '/libraries';
-
-  // Always search sites/all/libraries.
-  $searchdir[] = 'sites/all/libraries';
-
-  // Also search sites/<domain>/*.
-  $searchdir[] = conf_path() . '/libraries';
-
-  foreach ($searchdir as $dir) {
-    if (file_exists($dir . '/multidatespicker/jquery-ui.multidatespicker.js')) {
-      return $dir . '/multidatespicker';
-    }
-  }
-
-  return FALSE;
 }
 
 /**
