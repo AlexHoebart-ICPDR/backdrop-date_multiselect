@@ -169,7 +169,10 @@ function date_multiselect_js_settings_id($id, array $settings) {
 
   $return_id = "$id-multiselect-" . $id_count[$id]++;
   $js_settings['dateMultiselect'][$return_id] = array(
-    'settings' => $settings + array('altField' => 'input#' . $return_id),
+    'settings' => $settings + array(
+      'altField' => 'input#' . $return_id,
+      'smartphoneWidth' => variable_get('smartphone_width', 380),
+    ),
   );
   drupal_add_js($js_settings, 'setting');
   return $return_id;

@@ -13,7 +13,7 @@
             settings.addDates = input.val().split(', ');
             settings.minDate = this.getMinDate(settings.minDate, settings.addDates[0], settings.dateFormat);
           }
-          if ($(window).width() <= 380) {
+          if ($(window).width() <= settings.smartphoneWidth) {
             settings.numberOfMonths = 1;
           }
           input
