@@ -196,7 +196,8 @@ function date_multiselect_implode_dates($items) {
     if ($item['value']) {
       if (is_numeric($item['value'])) {
         $value = date(DATE_MULTISELECT_FORMAT, $item['value']);
-      } else {
+      }
+      else {
         $value = (new DateObject($item['value']))->format(DATE_MULTISELECT_FORMAT);
       }
       $return = $return ? ("$return, $value") : $value;

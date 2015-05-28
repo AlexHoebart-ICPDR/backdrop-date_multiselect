@@ -1,4 +1,5 @@
 /**
+ * @file
  * Attaches the calendar behavior to all required fields.
  */
 
@@ -35,7 +36,8 @@
       var minDateObj = null;
       if (typeof minDate == 'string') {
         minDateObj = $.datepicker.parseDate(format, minDate);
-      } else if (typeof minDate == 'number') {
+      }
+      else if (typeof minDate == 'number') {
         minDateObj = new Date();
         minDateObj.setDate(minDateObj.getDate() + minDate);
       }
