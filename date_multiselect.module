@@ -272,11 +272,13 @@ function date_multiselect_element_process($element, &$form_state, $form) {
     'dateFormat' => date_popup_format_to_popup(DATE_MULTISELECT_FORMAT),
     'yearRange' => $year_range,
   );
-  if (!empty($instance['widget']['settings']['minDate'])) {
-    $settings['minDate'] = (int) $instance['widget']['settings']['minDate'];
-  }
-  if (!empty($instance['widget']['settings']['maxDate'])) {
-    $settings['maxDate'] = (int) $instance['widget']['settings']['maxDate'];
+  if (!user_access('date multiselect out of scope')) {
+    if (!empty($instance['widget']['settings']['minDate'])) {
+      $settings['minDate'] = (int) $instance['widget']['settings']['minDate'];
+    }
+    if (!empty($instance['widget']['settings']['maxDate'])) {
+      $settings['maxDate'] = (int) $instance['widget']['settings']['maxDate'];
+    }
   }
   if ($field['cardinality'] != '-1') {
     $settings['maxPicks'] = (int) $field['cardinality'];
@@ -338,4 +340,16 @@ function date_multiselect_validate($element, &$form_state) {
  */
 function date_multiselect_field_widget_error($element, $error, $form, &$form_state) {
   form_error($element, $error['message']);
+}
+
+/**
+ * Implements hook_permission().
+ */
+function date_multiselect_permission() {
+  return array(
+    'date multiselect out of scope' => array(
+      'title' => t('Allow to pick dates that are out of scope.'),
+      'description' => t('Allow a user to access dates that are not within the scope of the field settings.'),
+    ),
+  );
 }
