@@ -227,7 +227,7 @@ function date_multiselect_field_widget_form(&$form, &$form_state, $field, $insta
     '#type' => 'textfield',
     '#weight' => $delta,
     '#size' => 50,
-    '#maxlength' => 512,
+    '#maxlength' => 1024,
     '#date_timezone' => $timezone,
     '#element_validate' => array('date_multiselect_validate'),
     '#process' => array('date_multiselect_element_process'),
