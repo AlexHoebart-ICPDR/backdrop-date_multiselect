@@ -198,7 +198,8 @@ function date_multiselect_implode_dates($items) {
         $value = date(DATE_MULTISELECT_FORMAT, $item['value']);
       }
       else {
-        $value = (new DateObject($item['value']))->format(DATE_MULTISELECT_FORMAT);
+        $tmp_date = new DateObject($item['value']);
+        $value = $tmp_date->format(DATE_MULTISELECT_FORMAT);
       }
       $return = $return ? ("$return, $value") : $value;
     }
