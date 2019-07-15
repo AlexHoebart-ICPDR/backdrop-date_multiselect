@@ -4,12 +4,12 @@
  */
 
 (function ($) {
-  Drupal.behaviors.date_multiselect = {
+  Backdrop.behaviors.date_multiselect = {
     attach: function (context) {
-      for (var id in Drupal.settings.dateMultiselect) {
+      for (var id in Backdrop.settings.dateMultiselect) {
         var input = $('input#' + id);
         if (!input.hasClass('date-multiselect-init')) {
-          var settings = Drupal.settings.dateMultiselect[id].settings;
+          var settings = Backdrop.settings.dateMultiselect[id].settings;
           if (input.val()) {
             settings.addDates = input.val().split(', ');
             settings.minDate = this.getMinDate(settings.minDate, settings.addDates[0], settings.dateFormat);

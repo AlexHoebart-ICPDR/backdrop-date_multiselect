@@ -1,0 +1,15 @@
+.ui-datepicker-calendar td.ui-state-highlight {
+  background: #eee;
+  border: none;
+  color: #fff;
+}
+.ui-datepicker-calendar a.ui-state-highlight {
+  border: none;
+  outline: 1px solid #ed5;
+  background-color: none;
+}
+.ui-datepicker-calendar .ui-datepicker-current-day a {
+  border: none;
+  outline: 1px solid #ccc;
+  background-color: inherit;
+}

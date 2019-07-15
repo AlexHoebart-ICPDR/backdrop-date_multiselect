@@ -103,26 +103,19 @@ function date_multiselect_field_widget_settings_form($field, $instance) {
  * Play nice with jQuery UI.
  */
 function date_multiselect_add() {
-  drupal_add_library('system', 'ui.datepicker');
-  libraries_load('multidatespicker');
-  drupal_add_js(drupal_get_path('module', 'date_multiselect') . '/js/date_multiselect.js');
+  backdrop_add_library('system', 'ui.datepicker');
+  backdrop_add_library('date_multiselect', 'multidatespicker');
+  backdrop_add_js(backdrop_get_path('module', 'date_multiselect') . '/js/date_multiselect.js');
+  backdrop_add_css(backdrop_get_path('module', 'date_multiselect') . '/css/date_multiselect.css');
 }
 
-/**
- * Implements hook_libraries_info().
- */
-function date_multiselect_libraries_info() {
+function date_multiselect_library_info() {
   $libraries['multidatespicker'] = array(
-    'name' => 'MultiDatesPicker',
-    'vendor url' => 'http://multidatespickr.sourceforge.net/',
-    'download url' => 'http://sourceforge.net/projects/multidatespickr/files/MultiDatesPicker%20v1.6.3.zip/download',
-    'version arguments' => array(
-      'file' => 'jquery-ui.multidatespicker.js',
-      'pattern' => '/MultiDatesPicker\s+v([0-9\.]+)/',
-      'lines' => 5,
-    ),
-    'files' => array(
-      'js' => array('jquery-ui.multidatespicker.js'),
+    'title' => 'Multidates picker',
+    'website' => 'http://dubrox.github.io/Multiple-Dates-Picker-for-jQuery-UI/',
+    'version' => '1.6.6',
+    'js' => array(
+      backdrop_get_path('module', 'date_multiselect') . '/js/jquery-ui.multidatespicker.js' => array(),
     ),
   );
   return $libraries;
@@ -139,7 +132,7 @@ function date_multiselect_libraries_info() {
  * requiring a duplicate copy of the settings/code for every element
  * that uses them, but is much faster.  We could combine the logic by
  * putting the ids for each unique function/settings combo into
- * Drupal.settings and searching for each listed id.
+ * Backdrop.settings and searching for each listed id.
  *
  * @param string $id
  *   The CSS class prefix to search the DOM for.
@@ -150,8 +143,8 @@ function date_multiselect_libraries_info() {
  *   The CSS id to assign to the element.
  */
 function date_multiselect_js_settings_id($id, array $settings) {
-  $js_added = &drupal_static(__FUNCTION__);
-  $id_count = &drupal_static(__FUNCTION__ . ':id_count', array());
+  $js_added = &backdrop_static(__FUNCTION__);
+  $id_count = &backdrop_static(__FUNCTION__ . ':id_count', array());
 
   // Make sure multiselect date selector grid is in correct year.
   if (!empty($settings['yearRange'])) {
@@ -174,13 +167,14 @@ function date_multiselect_js_settings_id($id, array $settings) {
   }
 
   $return_id = "$id-multiselect-" . $id_count[$id]++;
+
   $js_settings['dateMultiselect'][$return_id] = array(
     'settings' => $settings + array(
       'altField' => 'input#' . $return_id,
-      'smartphoneWidth' => variable_get('smartphone_width', 380),
+      'smartphoneWidth' => config_get('date_multiselect.settings', 'smartphone_width'),
     ),
   );
-  drupal_add_js($js_settings, 'setting');
+  backdrop_add_js($js_settings, 'setting');
   return $return_id;
 }
 
@@ -198,7 +192,7 @@ function date_multiselect_implode_dates($items) {
         $value = date(DATE_MULTISELECT_FORMAT, $item['value']);
       }
       else {
-        $tmp_date = new DateObject($item['value']);
+        $tmp_date = new BackdropDateTime($item['value']);
         $value = $tmp_date->format(DATE_MULTISELECT_FORMAT);
       }
       $return = $return ? ("$return, $value") : $value;
@@ -261,15 +255,15 @@ function date_multiselect_element_process($element, &$form_state, $form) {
   $date = NULL;
   if (isset($element['#value'])) {
     $values = array_map('trim', explode(',', $element['#value']));
-    $date = new DateObject(array_shift($values), $element['#date_timezone'], DATE_MULTISELECT_FORMAT);
+    $date = new BackdropDateTime(array_shift($values), $element['#date_timezone'], DATE_MULTISELECT_FORMAT);
   }
   $range = date_range_years($instance['widget']['settings']['yearRange'], $date);
   $year_range = date_range_string($range);
 
   $settings = array(
     'numberOfMonths' => (int) $instance['widget']['settings']['numberOfMonths'],
-    'firstDay' => intval(variable_get('date_first_day', 0)),
-    'dateFormat' => date_popup_format_to_popup(DATE_MULTISELECT_FORMAT),
+    'firstDay' => intval(config_get('system.date','first_day')),
+    'dateFormat' => _date_popup_format_to_popup(DATE_MULTISELECT_FORMAT),
     'yearRange' => $year_range,
   );
   if (!user_access('date multiselect out of scope')) {
@@ -305,7 +299,7 @@ function date_multiselect_validate($element, &$form_state) {
     $field = field_info_field($element['#field_name']);
     $format = date_type_format($field['type']);
     foreach ($values as $value) {
-      $date = new DateObject($value, $element['#date_timezone'], DATE_MULTISELECT_FORMAT);
+      $date = new BackdropDateTime($value, $element['#date_timezone'], DATE_MULTISELECT_FORMAT);
       // If the date has errors, display them.
       // If something was input but there is no date, the date is invalid.
       // If the field is empty and required, set error message and return.
