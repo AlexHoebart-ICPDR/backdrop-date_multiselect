@@ -265,6 +265,7 @@ function date_multiselect_element_process($element, &$form_state, $form) {
     'firstDay' => intval(config_get('system.date','first_day')),
     'dateFormat' => _date_popup_format_to_popup(DATE_MULTISELECT_FORMAT),
     'yearRange' => $year_range,
+    'defaultDate' => $date->originalTime,
   );
   if (!user_access('date multiselect out of scope')) {
     if (!empty($instance['widget']['settings']['minDate'])) {
